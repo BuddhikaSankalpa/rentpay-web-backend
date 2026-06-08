@@ -1,4 +1,4 @@
-import { supabase } from "../index.js";
+import { supabase } from "../supabaseClient.js";
 
 // ─────────────────────────────────────────────
 // GIVE ROOMS TO STUDENTS (Admin only)

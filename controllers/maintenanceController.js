@@ -1,4 +1,4 @@
-import { supabase } from "../index.js";
+import { supabase } from "../supabaseClient.js";
 
 // ─────────────────────────────────────────────
 // POST /maintenance  →  User creates a new ticket

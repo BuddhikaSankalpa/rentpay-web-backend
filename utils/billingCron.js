@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import { supabase } from '../index.js'; 
+import { supabase } from '../supabaseClient.js'; 
 
 export const startBillingCron = () => {
     console.log("⏳ Billing Cron Jobs initialized...");

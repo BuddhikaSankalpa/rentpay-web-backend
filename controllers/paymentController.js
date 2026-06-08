@@ -1,4 +1,4 @@
-import { supabase } from "../index.js";
+import { supabase } from "../supabaseClient.js";
 
 // ─────────────────────────────────────────────
 // ENTER MONTHLY BILL INTO THE SYSTEM   (Admin only)

@@ -1,4 +1,4 @@
-import { supabase } from "../index.js";
+import { supabase } from "../supabaseClient.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";

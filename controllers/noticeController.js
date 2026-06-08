@@ -1,4 +1,4 @@
-import { supabase } from "../index.js";
+import { supabase } from "../supabaseClient.js";
 
 // ─────────────────────────────────────────────
 // GET /notices  →  Active (non-expired) notices for everyone
