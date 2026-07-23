@@ -15,7 +15,20 @@ import { startBillingCron } from './utils/billingCron.js';
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+
+
+// app.use(cors()); wenuwata me tika danna
+
+app.use(cors({
+    origin: [
+        "https://rentpay-web-frontend-five.vercel.app", // Oyage Vercel frontend URL eka
+        "http://localhost:5173", // Local development walata (Vite default port)
+        "http://localhost:3000"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    credentials: true, // Authorization headers/cookies walata allow karanawa
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
 app.get("/", (_req, res) => {
     res.status(200).json({
