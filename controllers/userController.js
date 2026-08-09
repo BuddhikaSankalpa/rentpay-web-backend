@@ -152,18 +152,40 @@ export async function loginUser(req, res) {
 // ─────────────────────────────────────────────
 export async function googleLogin(req, res) {
     try {
-        const { credential } = req.body;
-        if (!credential) {
-            return res.status(400).json({ message: "Google credential is required" });
+        const { credential, access_token } = req.body;
+        if (!credential && !access_token) {
+            return res.status(400).json({ message: "Google credential or access token is required" });
         }
 
-        // Verify the token with Google
-        const ticket = await googleClient.verifyIdToken({
-            idToken: credential,
-            audience: process.env.GOOGLE_CLIENT_ID,
-        });
-        const payload = ticket.getPayload();
-        const { email, given_name, family_name, picture, email_verified } = payload;
+        let email, given_name, family_name, picture, email_verified;
+
+        if (credential) {
+            // Verify the ID token with Google
+            const ticket = await googleClient.verifyIdToken({
+                idToken: credential,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            });
+            const payload = ticket.getPayload();
+            email = payload.email;
+            given_name = payload.given_name;
+            family_name = payload.family_name;
+            picture = payload.picture;
+            email_verified = payload.email_verified;
+        } else if (access_token) {
+            // Verify the access token with Google
+            const response = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+                headers: { Authorization: `Bearer ${access_token}` }
+            });
+            if (!response.ok) {
+                return res.status(401).json({ message: "Invalid Google access token" });
+            }
+            const payload = await response.json();
+            email = payload.email;
+            given_name = payload.given_name;
+            family_name = payload.family_name;
+            picture = payload.picture;
+            email_verified = payload.email_verified;
+        }
 
         if (!email_verified) {
             return res.status(401).json({ message: "Google email not verified" });
