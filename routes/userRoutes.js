@@ -6,7 +6,8 @@ import {
     updateUser, 
     toggleBlockUser, 
     getUser, 
-    getAllUsers 
+    getAllUsers,
+    googleLogin
 } from '../controllers/userController.js';
 
 import authenticate from '../middlewares/authenticate.js';
@@ -15,6 +16,7 @@ const userRouter = express.Router();
 
 userRouter.post("/", createUser);
 userRouter.post("/login", loginUser);
+userRouter.post("/google", googleLogin);
 userRouter.get("/all", authenticate, getAllUsers);
 
 userRouter.delete("/:email", authenticate, deleteUser);

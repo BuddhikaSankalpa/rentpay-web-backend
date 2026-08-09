@@ -2,7 +2,10 @@ import { supabase } from "../supabaseClient.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import { OAuth2Client } from "google-auth-library";
 dotenv.config();
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // ─────────────────────────────────────────────
 // CREATE USER
@@ -121,6 +124,98 @@ export async function loginUser(req, res) {
         );
 
         // Return safe user profile data separately (not from the token)
+        return res.status(200).json({
+            message: "Login successful",
+            token,
+            user: {
+                email: user.email,
+                firstName: user.first_name,
+                lastName: user.last_name,
+                phoneNumber: user.phone_number,
+                nicNumber: user.nic_number,
+                university: user.university,
+                faculty: user.faculty,
+                studentId: user.student_id,
+                isAdmin: user.is_admin,
+                isEmailVerified: user.is_email_verified,
+                image: user.image
+            }
+        });
+
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
+    }
+}
+
+// ─────────────────────────────────────────────
+// GOOGLE LOGIN USER
+// ─────────────────────────────────────────────
+export async function googleLogin(req, res) {
+    try {
+        const { credential } = req.body;
+        if (!credential) {
+            return res.status(400).json({ message: "Google credential is required" });
+        }
+
+        // Verify the token with Google
+        const ticket = await googleClient.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        const { email, given_name, family_name, picture, email_verified } = payload;
+
+        if (!email_verified) {
+            return res.status(401).json({ message: "Google email not verified" });
+        }
+
+        // Check if user exists in our DB
+        let { data: user, error: searchError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('email', email)
+            .single();
+
+        if (searchError && searchError.code !== 'PGRST116') {
+            throw searchError;
+        }
+
+        if (!user) {
+            // New user via Google Login -> Register them
+            const randomPassword = await bcrypt.hash(Date.now().toString() + Math.random().toString(), 10);
+            
+            const { data: newUser, error: insertError } = await supabase
+                .from('users')
+                .insert([{
+                    email: email,
+                    first_name: given_name || 'Student',
+                    last_name: family_name || '',
+                    password: randomPassword,
+                    is_email_verified: true,
+                    image: picture
+                }])
+                .select('*')
+                .single();
+
+            if (insertError) throw insertError;
+            user = newUser;
+        } else {
+            if (user.is_blocked) {
+                return res.status(403).json({ message: "Your account has been blocked. Please contact support." });
+            }
+        }
+
+        // Generate JWT
+        const token = jwt.sign(
+            {
+                id: user.id,
+                email: user.email,
+                isAdmin: user.is_admin
+            },
+            process.env.JWT_SECRET_KEY,
+            { expiresIn: "7d" }
+        );
+
         return res.status(200).json({
             message: "Login successful",
             token,
