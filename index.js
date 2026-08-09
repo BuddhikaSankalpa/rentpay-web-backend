@@ -20,12 +20,10 @@ app.use(express.json());
 // app.use(cors()); wenuwata me tika danna
 
 app.use(cors({
-    origin: [
-        "https://rentpay-web-frontend.vercel.app",
-        "https://rentpay-web-frontend-five.vercel.app",
-        "http://localhost:5173",
-        "http://localhost:3000"
-    ],
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+        return callback(null, true); // Allow all origins to prevent Vercel preview/username domain issues
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"]
