@@ -21,12 +21,13 @@ app.use(express.json());
 
 app.use(cors({
     origin: [
-        "https://rentpay-web-frontend-five.vercel.app", // Oyage Vercel frontend URL eka
-        "http://localhost:5173", // Local development walata (Vite default port)
+        "https://rentpay-web-frontend.vercel.app",
+        "https://rentpay-web-frontend-five.vercel.app",
+        "http://localhost:5173",
         "http://localhost:3000"
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    credentials: true, // Authorization headers/cookies walata allow karanawa
+    credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
